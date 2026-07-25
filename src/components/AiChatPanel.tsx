@@ -1,16 +1,85 @@
 import { MessageSquare, X, Send } from "lucide-react";
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import type { ChatMessage } from "~/lib/types";
-import { mockChatMessages } from "~/lib/mock-data";
+import { sendChatMessage } from "~/lib/ai";
 
 interface AiChatPanelProps {
   isOpen: boolean;
   onToggle: () => void;
 }
 
+const WELCOME_MESSAGE: ChatMessage = {
+  id: "msg-welcome",
+  role: "assistant",
+  content:
+    "Hello! I'm your DropAI assistant. I can help you find trending products, write product descriptions, analyze your store performance, and more. What can I help with today?",
+  timestamp: new Date().toISOString(),
+};
+
 export function AiChatPanel({ isOpen, onToggle }: AiChatPanelProps) {
-  const [messages] = useState<ChatMessage[]>(mockChatMessages);
+  const [messages, setMessages] = useState<ChatMessage[]>([WELCOME_MESSAGE]);
   const [input, setInput] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  // Auto-scroll to bottom when messages change
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages, isLoading]);
+
+  // Focus input when panel opens
+  useEffect(() => {
+    if (isOpen) {
+      setTimeout(() => inputRef.current?.focus(), 100);
+    }
+  }, [isOpen]);
+
+  const handleSend = async () => {
+    const trimmed = input.trim();
+    if (!trimmed || isLoading) return;
+
+    const userMessage: ChatMessage = {
+      id: `msg-${Date.now()}`,
+      role: "user",
+      content: trimmed,
+      timestamp: new Date().toISOString(),
+    };
+
+    setInput("");
+    setMessages((prev) => [...prev, userMessage]);
+    setIsLoading(true);
+
+    try {
+      const response = await sendChatMessage({
+        data: {
+          message: trimmed,
+          history: messages,
+        },
+      });
+
+      setMessages((prev) => [...prev, response]);
+    } catch {
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: `msg-${Date.now()}`,
+          role: "assistant",
+          content: "AI is unavailable right now. Please try again later.",
+          timestamp: new Date().toISOString(),
+        },
+      ]);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter" && input.trim() && !isLoading) {
+      e.preventDefault();
+      handleSend();
+    }
+  };
 
   return (
     <>
@@ -66,25 +135,50 @@ export function AiChatPanel({ isOpen, onToggle }: AiChatPanelProps) {
               </div>
             </div>
           ))}
+
+          {/* Typing indicator */}
+          {isLoading && (
+            <div className="flex justify-start">
+              <div className="max-w-[85%] rounded-xl bg-[#1a1d27] px-4 py-2.5">
+                <div className="flex items-center gap-1">
+                  <span className="sr-only">AI is thinking</span>
+                  <span
+                    className="h-2 w-2 animate-bounce rounded-full bg-gray-400"
+                    style={{ animationDelay: "0ms" }}
+                  />
+                  <span
+                    className="h-2 w-2 animate-bounce rounded-full bg-gray-400"
+                    style={{ animationDelay: "150ms" }}
+                  />
+                  <span
+                    className="h-2 w-2 animate-bounce rounded-full bg-gray-400"
+                    style={{ animationDelay: "300ms" }}
+                  />
+                </div>
+              </div>
+            </div>
+          )}
+
+          <div ref={messagesEndRef} />
         </div>
 
         {/* Input */}
         <div className="border-t border-white/[0.06] p-4">
           <div className="flex items-center gap-2">
             <input
+              ref={inputRef}
               type="text"
               value={input}
               onChange={(e) => setInput(e.target.value)}
               placeholder="Ask about products, analytics..."
               className="flex-1 rounded-lg border border-white/[0.08] bg-[#1a1d27] px-3 py-2 text-sm text-gray-200 placeholder-gray-500 outline-none focus:border-indigo-500/50"
-              onKeyDown={(e) => {
-                if (e.key === "Enter" && input.trim()) {
-                  setInput("");
-                }
-              }}
+              onKeyDown={handleKeyDown}
+              disabled={isLoading}
             />
             <button
-              className="flex h-9 w-9 items-center justify-center rounded-lg bg-indigo-500 text-white hover:bg-indigo-400"
+              onClick={handleSend}
+              disabled={isLoading || !input.trim()}
+              className="flex h-9 w-9 items-center justify-center rounded-lg bg-indigo-500 text-white hover:bg-indigo-400 disabled:opacity-50 disabled:cursor-not-allowed"
               aria-label="Send message"
             >
               <Send className="h-4 w-4" />
