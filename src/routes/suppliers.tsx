@@ -1,9 +1,14 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { Truck, Star, ExternalLink } from "lucide-react";
+import { DashboardPageShell } from "~/components/DashboardPageShell";
 import { mockSuppliers } from "~/lib/mock-data";
 
 export const Route = createFileRoute("/suppliers")({
-  component: SuppliersPage,
+  component: () => (
+    <DashboardPageShell>
+      <SuppliersPage />
+    </DashboardPageShell>
+  ),
 });
 
 const platformColors: Record<string, string> = {

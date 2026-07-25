@@ -6,7 +6,6 @@ import {
 } from "@tanstack/react-router";
 import type { ReactNode } from "react";
 
-import { DashboardShell } from "~/components/DashboardShell";
 import appCss from "~/styles/app.css?url";
 
 export const Route = createRootRoute({
@@ -14,7 +13,14 @@ export const Route = createRootRoute({
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "DropAI — AI-Powered Dropshipping" },
+      {
+        title: "DropAI — AI-Powered Dropshipping Store",
+      },
+      {
+        name: "description",
+        content:
+          "Launch a profitable dropshipping store with AI. DropAI handles product discovery, copywriting, analytics, and customer recovery — no inventory needed.",
+      },
     ],
     links: [{ rel: "stylesheet", href: appCss }],
   }),
@@ -25,9 +31,7 @@ export const Route = createRootRoute({
 function RootComponent() {
   return (
     <RootDocument>
-      <DashboardShell>
-        <Outlet />
-      </DashboardShell>
+      <Outlet />
     </RootDocument>
   );
 }

@@ -1,10 +1,15 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { BarChart3, TrendingUp, DollarSign, ShoppingCart, Users, RotateCcw } from "lucide-react";
+import { DashboardPageShell } from "~/components/DashboardPageShell";
 import { KpiCard } from "~/components/KpiCard";
 import { mockAnalytics } from "~/lib/mock-data";
 
 export const Route = createFileRoute("/analytics")({
-  component: AnalyticsPage,
+  component: () => (
+    <DashboardPageShell>
+      <AnalyticsPage />
+    </DashboardPageShell>
+  ),
 });
 
 function AnalyticsPage() {

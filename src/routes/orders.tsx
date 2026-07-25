@@ -1,9 +1,14 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { ShoppingCart, Clock, CheckCircle, XCircle, Truck, Search } from "lucide-react";
+import { DashboardPageShell } from "~/components/DashboardPageShell";
 import { mockOrders } from "~/lib/mock-data";
 
 export const Route = createFileRoute("/orders")({
-  component: OrdersPage,
+  component: () => (
+    <DashboardPageShell>
+      <OrdersPage />
+    </DashboardPageShell>
+  ),
 });
 
 const statusConfig: Record<string, { icon: typeof ShoppingCart; color: string; bg: string }> = {

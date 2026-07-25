@@ -1,9 +1,14 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { Package, Plus, Search } from "lucide-react";
+import { DashboardPageShell } from "~/components/DashboardPageShell";
 import { mockProducts } from "~/lib/mock-data";
 
 export const Route = createFileRoute("/products")({
-  component: ProductsPage,
+  component: () => (
+    <DashboardPageShell>
+      <ProductsPage />
+    </DashboardPageShell>
+  ),
 });
 
 function ProductsPage() {
