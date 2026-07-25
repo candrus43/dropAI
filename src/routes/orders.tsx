@@ -1,7 +1,11 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { ShoppingCart, Clock, CheckCircle, XCircle, Truck, Search } from "lucide-react";
 import { DashboardPageShell } from "~/components/DashboardPageShell";
+import { OrderInsightsPanel } from "~/components/OrderInsightsPanel";
+import { analyzeOrderPatterns } from "~/lib/order-insights";
 import { mockOrders } from "~/lib/mock-data";
+
+const orderInsights = analyzeOrderPatterns(mockOrders);
 
 export const Route = createFileRoute("/orders")({
   component: () => (
@@ -26,6 +30,9 @@ function OrdersPage() {
         <h1 className="text-2xl font-bold text-white">Orders</h1>
         <p className="mt-1 text-sm text-gray-400">Track and manage customer orders</p>
       </div>
+
+      {/* AI Order Insights */}
+      <OrderInsightsPanel insights={orderInsights} />
 
       {/* Search + filters placeholder */}
       <div className="flex items-center gap-3">
